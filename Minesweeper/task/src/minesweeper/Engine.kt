@@ -3,7 +3,6 @@ package minesweeper
 import minesweeper.Cell.*
 import kotlin.random.Random
 
-
 class Engine(
     private val weight: Int,
     private val height: Int
