@@ -29,23 +29,21 @@ class Engine(
         bombsCoordList.forEach { bombMatrix[it.first][it.second] = BOMBED }
     }
 
-    fun markCell(x: Int, y: Int): Boolean {
-        return if (hintMatrix[x][y] != HIDDEN) false
+    fun markCell(x: Int, y: Int): Boolean =
+        if (hintMatrix[x][y] != HIDDEN) false
         else {
             markMatrix[x][y] = if (markMatrix[x][y] == CLEAR) MARKED else CLEAR
             true
         }
-    }
 
-    fun openCell(x: Int, y: Int): Boolean {
-        return if (bombMatrix[x][y] == BOMBED) {
+    fun openCell(x: Int, y: Int): Boolean =
+        if (bombMatrix[x][y] == BOMBED) {
             isAlive = false
             false
         } else {
             recursiveOpenCells(x, y)
             true
         }
-    }
 
     private fun recursiveOpenCells(x: Int, y: Int) {
         val topOffset = if (x == 0) 0 else 1
@@ -74,12 +72,12 @@ class Engine(
     fun isWin(): Boolean {
         var closedCellsCount = 0
         var wrongMarksCount = 0
-        for (x in bombMatrix.indices)
-            for (y in bombMatrix.indices) {
-                if (bombMatrix[x][y] == BOMBED && markMatrix[x][y] != MARKED) wrongMarksCount++
-                if (bombMatrix[x][y] != BOMBED && markMatrix[x][y] == MARKED) wrongMarksCount++
-                if (hintMatrix[x][y] == HIDDEN) closedCellsCount++
-            }
+
+        bombMatrix.forMatrixIndices { x, y ->
+            if (bombMatrix[x][y] == BOMBED && markMatrix[x][y] != MARKED) wrongMarksCount++
+            if (bombMatrix[x][y] != BOMBED && markMatrix[x][y] == MARKED) wrongMarksCount++
+            if (hintMatrix[x][y] == HIDDEN) closedCellsCount++
+        }
 
         return closedCellsCount == bombsCount || wrongMarksCount == 0
     }
@@ -88,24 +86,26 @@ class Engine(
         val matrixWithHintAndMarks = mergeHintAndMarkLayers()
         val newSizeX = hintMatrix.size + 3
         val newSizeY = hintMatrix.first().size + 3
-        val bigMatrix: Array<Array<Char>> = Array(newSizeX) { Array(newSizeY) { ' ' } }
+        val borderedMatrix: Array<Array<Char>> = Array(newSizeX) { Array(newSizeY) { ' ' } }
 
-        bigMatrix[1] = Array(newSizeX) { '-' }
-        bigMatrix[newSizeX - 1] = Array(newSizeX) { '-' }
-
-        bigMatrix.forEach { line ->
+        //create boards
+        borderedMatrix[1] = Array(newSizeX) { '-' }
+        borderedMatrix[newSizeX - 1] = Array(newSizeX) { '-' }
+        borderedMatrix.forEach { line ->
             line[1] = '|'
             line[newSizeX - 1] = '|'
         }
 
-        for (x in 2 until newSizeX - 1) bigMatrix[x][0] = (x - 1).digitToChar()
-        for (x in 2 until newSizeY - 1) bigMatrix[0][x] = (x - 1).digitToChar()
+        //create board numbers
+        for (x in 2 until newSizeX - 1) borderedMatrix[x][0] = (x - 1).digitToChar()
+        for (x in 2 until newSizeY - 1) borderedMatrix[0][x] = (x - 1).digitToChar()
 
+        //paste merged game matrix inside bordered
         for (x in 2 until newSizeX - 1)
             for (y in 2 until newSizeY - 1)
-                bigMatrix[x][y] = matrixWithHintAndMarks[x - 2][y - 2].sym
+                borderedMatrix[x][y] = matrixWithHintAndMarks[x - 2][y - 2].sym
 
-        bigMatrix.forEach { row ->
+        borderedMatrix.forEach { row ->
             row.forEach { print(it) }
             println()
         }
@@ -113,20 +113,18 @@ class Engine(
 
     private fun mergeHintAndMarkLayers(): Array<Array<Cell>> {
         val tempMatrix: Array<Array<Cell>> = Array(height) { Array(weight) { CLEAR } }
-        for (x in tempMatrix.indices)
-            for (y in tempMatrix.indices) {
-                tempMatrix[x][y] = hintMatrix[x][y] as Cell
-            }
 
-        for (x in hintMatrix.indices)
-            for (y in hintMatrix.indices) {
-                if (markMatrix[x][y] == MARKED) tempMatrix[x][y] = MARKED
-                if (!isAlive && bombMatrix[x][y] == BOMBED) tempMatrix[x][y] = BOMBED
-            }
+        tempMatrix.forMatrixIndices { x, y ->
+            tempMatrix[x][y] = hintMatrix[x][y] as Cell
+        }
+
+        tempMatrix.forMatrixIndices { x, y ->
+            if (markMatrix[x][y] == MARKED) tempMatrix[x][y] = MARKED
+            if (!isAlive && bombMatrix[x][y] == BOMBED) tempMatrix[x][y] = BOMBED
+        }
 
         return tempMatrix
     }
-
 
 
 }

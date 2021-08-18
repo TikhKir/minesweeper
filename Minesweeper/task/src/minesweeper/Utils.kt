@@ -31,6 +31,12 @@ fun Int.toHintDigit(): Hint = when (this) {
     else -> throw IllegalArgumentException("wrong number")
 }
 
+inline fun <T : Any> Array<Array<T>>.forMatrixIndices(action: (x: Int, y: Int) -> Unit) {
+    for (x in this.indices)
+        for (y in this.indices)
+            action.invoke(x, y)
+}
+
 
 
 
