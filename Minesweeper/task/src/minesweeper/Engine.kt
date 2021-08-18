@@ -16,13 +16,14 @@ class Engine(
 
     fun generateBombs(bombsCount: Int, startX: Int, startY: Int) {
         this.bombsCount = bombsCount
-        val count = if (bombsCount > weight * height) (weight * height) - 1 else bombsCount
+        val cellCount = weight * height
+        val actualBombCount = if (bombsCount > cellCount) cellCount - 1 else bombsCount
         val wrongFirstBomb = Pair(startX, startY)
         val bombsCoordList = mutableListOf<Pair<Int, Int>>()
 
-        while (bombsCoordList.size < count) {
+        while (bombsCoordList.size < actualBombCount) {
             val newBombCoords = Pair(Random.nextInt(weight), Random.nextInt(height))
-            if (!bombsCoordList.contains(newBombCoords) && newBombCoords != wrongFirstBomb)
+            if (newBombCoords !in bombsCoordList && newBombCoords != wrongFirstBomb)
                 bombsCoordList.add(newBombCoords)
         }
 
@@ -82,36 +83,7 @@ class Engine(
         return closedCellsCount == bombsCount || wrongMarksCount == 0
     }
 
-    fun drawWithBorders() {
-        val matrixWithHintAndMarks = mergeHintAndMarkLayers()
-        val newSizeX = hintMatrix.size + 3
-        val newSizeY = hintMatrix.first().size + 3
-        val borderedMatrix: Array<Array<Char>> = Array(newSizeX) { Array(newSizeY) { ' ' } }
-
-        //create boards
-        borderedMatrix[1] = Array(newSizeX) { '-' }
-        borderedMatrix[newSizeX - 1] = Array(newSizeX) { '-' }
-        borderedMatrix.forEach { line ->
-            line[1] = '|'
-            line[newSizeX - 1] = '|'
-        }
-
-        //create board numbers
-        for (x in 2 until newSizeX - 1) borderedMatrix[x][0] = (x - 1).digitToChar()
-        for (x in 2 until newSizeY - 1) borderedMatrix[0][x] = (x - 1).digitToChar()
-
-        //paste merged game matrix inside bordered
-        for (x in 2 until newSizeX - 1)
-            for (y in 2 until newSizeY - 1)
-                borderedMatrix[x][y] = matrixWithHintAndMarks[x - 2][y - 2].sym
-
-        borderedMatrix.forEach { row ->
-            row.forEach { print(it) }
-            println()
-        }
-    }
-
-    private fun mergeHintAndMarkLayers(): Array<Array<Cell>> {
+    fun getMergedMatrix(): Array<Array<Cell>> {
         val tempMatrix: Array<Array<Cell>> = Array(height) { Array(weight) { CLEAR } }
 
         tempMatrix.forMatrixIndices { x, y ->
