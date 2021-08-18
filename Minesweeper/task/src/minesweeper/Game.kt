@@ -10,7 +10,7 @@ class Game(
     private var bombsNotGenerated = true
 
     fun runGame() {
-        engine.drawField()
+        engine.drawWithBorders()
 
         while (bombsNotGenerated) {
             print("Set/unset mines marks or claim a cell as free: ")
@@ -27,7 +27,7 @@ class Game(
                 engine.openCell(inputX, inputY)
             }
 
-            engine.drawField()
+            engine.drawWithBorders()
         }
 
         while (isAlive && !engine.isWin()) {
@@ -39,11 +39,22 @@ class Game(
 
             if (actionMark) engine.markCell(inputX, inputY)
             else isAlive = engine.openCell(inputX, inputY)
-            engine.drawField()
+            engine.drawWithBorders()
         }
 
         if (engine.isWin()) println("Congratulations! You found all the mines!")
         else println("You stepped on a mine and failed!")
+    }
+
+    private fun turnIteration(action: (x: Int, y:Int, actionMark: Boolean) -> Unit) {
+        print("Set/unset mines marks or claim a cell as free: ")
+        val input = readLine()!!
+        val inputX = input.last { it.isDigit() }.digitToInt() - 1
+        val inputY = input.first { it.isDigit() }.digitToInt() - 1
+        val actionMark = input.contains("mine")
+
+        action.invoke(inputX, inputY, actionMark)
+        engine.drawWithBorders()
     }
 
 }

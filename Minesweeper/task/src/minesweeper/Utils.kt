@@ -1,30 +1,37 @@
 package minesweeper
 
-enum class Nums(val value: Int) {
-    ONE(1),
-    TWO(2),
-    THREE(3),
-    FOUR(4),
-    FIVE(5),
-    SIX(6),
-    SEVEN(7),
-    EIGHT(8)
+sealed interface Hint
+sealed interface Bomb
+sealed interface Mark
+
+sealed class Cell(val sym: Char) {
+    object CLEAR : Cell('/'), Hint, Bomb, Mark
+    object BOMBED : Cell('X'), Bomb
+    object MARKED : Cell('*'), Mark
+    object HIDDEN : Cell('.'), Hint
+    object ONE : Cell('1'), Hint
+    object TWO : Cell('2'), Hint
+    object THREE : Cell('3'), Hint
+    object FOUR : Cell('4'), Hint
+    object FIVE : Cell('5'), Hint
+    object SIX : Cell('6'), Hint
+    object SEVEN : Cell('7'), Hint
+    object EIGHT : Cell('8'), Hint
 }
 
-sealed class Cell {
-    object Hidden
-
-    sealed class BombCell : Cell() {
-        object Bombed : BombCell()
-    }
-
-    sealed class MarkCell : Cell() {
-        object Marked : MarkCell()
-    }
-
-    sealed class HintCell : Cell() {
-        object Clear
-        class Hinted(val number: Nums)
-    }
+fun Int.toHintDigit(): Hint = when (this) {
+    1 -> Cell.ONE
+    2 -> Cell.TWO
+    3 -> Cell.THREE
+    4 -> Cell.FOUR
+    5 -> Cell.FIVE
+    6 -> Cell.SIX
+    7 -> Cell.SEVEN
+    8 -> Cell.EIGHT
+    else -> throw IllegalArgumentException("wrong number")
 }
+
+
+
+
 
